@@ -17,7 +17,7 @@ class Bigram:
 	def __init__(self):
 		pass
 
-	def trainModel(self, corpusPath='corpus/corpus.txt'):
+    def trainModel(self, corpusPath='corpus/corpus.txt'):
         with open(corpusPath) as f:
             for line in f:
                 line = line.strip()
@@ -30,8 +30,6 @@ class Bigram:
                         words[line[i:i+1]] = 1
                     else:
                         words[line[i:i+1]] += 1 
-                    
-        
 
 	def modelOutput(self, characterFilePath='modelData/characterFile.txt', wordsFilePath='modelData/wordsFile.txt'):
         with characterFile = open(characterFilePath, 'w')
