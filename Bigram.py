@@ -5,7 +5,7 @@ import math
 
 LocalCh='modelData/characterFile.txt'
 LocalWords='modelData/wordsFile.txt'
-Localcorpus='corpus/corpus.txt'
+Localcorpus='corpus/BigCorpusPre.txt'
 
 class Bigram:
 	'''
@@ -34,24 +34,25 @@ class Bigram:
         def trainModel(self, corpusPath=Localcorpus):
 	    with open(corpusPath) as f:
 		for line in f:
+                    line = line.decode('utf-8')
 		    line = line.strip()
-                for i in range(0, len(line)):
-                    if not character.has_key(line[i]):
-                        character[line[i]] = 1
-                    else:
-                        character[line[i]] += 1
-                    if not words.has_key(line[i:i+2]):
-                        words[line[i:i+2]] = 1
-                    else:
-                        words[line[i:i+2]] += 1 
+                    for i in range(0, len(line)):
+                        if not self.character.has_key(line[i]):
+                            self.character[line[i]] = 1
+                        else:
+                            self.character[line[i]] += 1
+                        if not self.words.has_key(line[i:i+2]):
+                            self.words[line[i:i+2]] = 1
+                        else:
+                            self.words[line[i:i+2]] += 1 
 
 	def modelOutput(self, characterPath=LocalCh, wordsPath=LocalWords):
 	    characterFile = open(characterPath, 'w')
             wordsFile = open(wordsPath, 'w')
-            for ch, count in character:
-                characterFile.write(ch+':'+count)
-            for word, count in words:
-                wordsFile.write(word+':'+count)
+            for (ch, count) in self.character.items():
+                characterFile.write(ch.encode('utf-8')+':'+repr(count)+'\n')
+            for (word, count) in self.words.items():
+                wordsFile.write(word.encode('utf-8')+':'+repr(count)+'\n')
             characterFile.close()
             wordsFile.close()
         
@@ -60,21 +61,29 @@ class Bigram:
             characterFile = open(characterPath, 'r')
             wordsFile = open(wordsPath, 'r')
             for line in characterFile:
+                if len(line.strip()) == 0:
+                    continue
                 parts = line.split(':')
-                character[parts[0]] = parts[1]
-                characterCount += parts[1]
+                if len(parts[0]) == 0 or len(parts[1]) == 0:
+                    continue
+                self.character[parts[0]] = parts[1]
+                self.characterCount += int(parts[1])
             for line in wordsFile:
+                if len(line.strip()) == 0:
+                    continue
                 parts = line.split(':')
-                words[parts[0]] = parts[1]
-                wordsCount += parts[1]
+                if len(parts[0]) == 0 or len(parts[1]) == 0:
+                    continue
+                self.words[parts[0]] = parts[1]
+                self.wordsCount += int(parts[1])
             characterFile.close()
             wordsFile.close()
 
         def getPieceCount(self, piece):
             if len(piece) == 1:
-                return character.setdefault(piece, 0)
+                return self.character.setdefault(piece, 0)
             elif len(piece) == 2:
-                return words.setdefault(piece, 0)
+                return self.words.setdefault(piece, 0)
             else:
                 print 'Word piece is wrong size.\n'
 
@@ -94,8 +103,10 @@ class Bigram:
 	
 	def testSetProcess(self):
             pass
-if __name__ == __main__:
-    print 'Model is training...\n'
+if __name__ == '__main__':
+    #print 'Model is training...\n'
     bm = Bigram()
-    bm.trainModel()
-    tm.modelOutput()
+    #bm.trainModel()
+    #bm.modelOutput()
+    print 'Start Judging...\n'
+    bm.modelLoader();

@@ -1,4 +1,4 @@
-#! /usr/share/env python
+#! /usr/bin/env python
 # -*- coding=utf-8 -*-
 
 resultFile = open('corpus/BigCorpusPre.txt', 'w')
