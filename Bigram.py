@@ -2,10 +2,14 @@
 # -*- coding=utf-8 -*-
 
 import math
+import logging
+
+logging.basicConfig(filename='log/log.txt', level=logging.DEBUG)
 
 LocalCh='modelData/characterFile.txt'
 LocalWords='modelData/wordsFile.txt'
 Localcorpus='corpus/BigCorpusPre.txt'
+LocalTestset='testSet/test.txt'
 
 class Bigram:
 	'''
@@ -25,8 +29,6 @@ class Bigram:
         #平滑
         lam = 1
 
-	#测试集
-	judgeResult=file
 
 	def __init__(self):
 	    pass
@@ -63,6 +65,7 @@ class Bigram:
             for line in characterFile:
                 if len(line.strip()) == 0:
                     continue
+                line = line.decode('utf-8')
                 parts = line.split(':')
                 if len(parts[0]) == 0 or len(parts[1]) == 0:
                     continue
@@ -71,6 +74,7 @@ class Bigram:
             for line in wordsFile:
                 if len(line.strip()) == 0:
                     continue
+                line = line.decode('utf-8')
                 parts = line.split(':')
                 if len(parts[0]) == 0 or len(parts[1]) == 0:
                     continue
@@ -81,32 +85,42 @@ class Bigram:
 
         def getPieceCount(self, piece):
             if len(piece) == 1:
-                return self.character.setdefault(piece, 0)
+                return float(self.character.setdefault(piece, 0))
             elif len(piece) == 2:
-                return self.words.setdefault(piece, 0)
+                return float(self.words.setdefault(piece, 0))
             else:
                 print 'Word piece is wrong size.\n'
 
         def getPiecePro(self, frontPiece, word):
-            frontPro = getPiecePro(frontPiece) / characterCount
-            wordPro = getPiecePro(word) / wordsCount
-            return (wordPro + self.lam) / (frontPro + self.lam)
+            frontPro = self.getPieceCount(frontPiece) / self.characterCount
+            wordPro = self.getPieceCount(word) / self.wordsCount
+            return float((wordPro + self.lam) / (frontPro + self.lam*65535))
 
 
 	def getSentencePro(self, sentence):
+            sentence = sentence.decode('utf-8')
             if len(sentence.strip()) == 0:
                 return 0
-            retPro = math.log(getPiecePro(sentence[0]+lam)/(characterCount+lam))
+            #retPro = math.log((self.getPieceCount(sentence[0])+self.lam)/(self.characterCount+self.lam))
+            retPro = 0
             for i in range(1, len(sentence)):
-                retPro += math.log(getPiecePro(sentence[i], sentence[i-1:i+1])) 
+                retPro += math.log(self.getPiecePro(sentence[i-1], sentence[i-1:i+1])) 
+                logging.debug(sentence[i-1]+':'+repr(self.getPieceCount(sentence[i-1])))
+                logging.debug(sentence[i-1:i+1] +':'+repr(self.getPieceCount(sentence[i-1:i+1])))
+            logging.debug('result:' + repr(retPro))
             return retPro
 	
-	def testSetProcess(self):
-            pass
+	def testSetProcess(self, testSet=LocalTestset):
+            pass 
+
 if __name__ == '__main__':
-    #print 'Model is training...\n'
     bm = Bigram()
+    #print 'Model is training...\n'
     #bm.trainModel()
     #bm.modelOutput()
     print 'Start Judging...\n'
     bm.modelLoader();
+    print bm.getSentencePro('我在看漫画')
+    print bm.getSentencePro('在看漫画我')
+    print bm.getSentencePro('看我漫画在')
+    print bm.getSentencePro('看在漫画我')
